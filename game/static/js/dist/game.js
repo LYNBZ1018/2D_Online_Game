@@ -52,13 +52,48 @@ class AcGameMenu {
             this.$menu.hide();
         }
 }
+let AC_GAME_OBJECTS = [];
+
+class AcGameObject {
+    construct() {
+        AC_GAME_OBJECTS.push(this);
+    }
+
+    start() {  // 只会在第一帧执行一次
+    }
+
+    update() {  // 每一帧均会执行一次
+    }
+
+    on_destroy() {  // 在被销毁前执行一次
+    }
+
+    destroy() {  // 删掉该物体
+        this.on_destroy();
+
+        for (let i = 0; i < AC_GAME_OBJECTS.length; i ++ ) {
+            if (AC_GAME_OBJECTS[i] === this) {
+                AC_GAME_OBJECTS.splice(i, 1);
+                break;
+            }
+        }
+    }
+}
+
+
+
+
+
+requestAnimationFrame();
 class AcGamePlayground {
     constructor(root) {
         this.root = root;
-        this.$playground = $(`<div>Game</div>`);
+        this.$playground = $(`<div class="ac-game-playground"></div>`);
 
-        this.hide();
+        //this.hide();
         this.root.$ac_game.append(this.$playground);
+        this.width = this.$playground.width();
+        this.height = this.$palyground.weight();
 
         this.start();
     }
@@ -75,11 +110,11 @@ class AcGamePlayground {
         this.$playground.hide();
     }
 }
-class AcGame {
+export class AcGame {
     constructor(id) {
         this.id = id;
         this.$ac_game = $('#' + id);
-        this.menu = new AcGameMenu(this);
+        //this.menu = new AcGameMenu(this);
         this.playground = new AcGamePlayground(this);
 
         this.start();
