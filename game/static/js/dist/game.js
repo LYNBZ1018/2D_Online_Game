@@ -57,6 +57,9 @@ let AC_GAME_OBJECTS = [];
 class AcGameObject {
     construct() {
         AC_GAME_OBJECTS.push(this);
+
+        this.has_called_start = false;  // 是否执行过start函数
+        this.timedelta = 0;  // 当前帧距离上一帧的时间间隔
     }
 
     start() {  // 只会在第一帧执行一次
@@ -80,11 +83,52 @@ class AcGameObject {
     }
 }
 
+let last_timestamp;
+let AC_GAME_ANIMATION = function(timestamp) {
+    for (let i = 0; i < AC_GAME_OBJECTS.length; i ++ ) {
+        let obj = AC_GAME_OBJECTS[i];
+        if (!obj.has_called_start) {
+            obj.start();
+            obj.has_called_start = true;
+        }
+        else {
+            obj.timesdelta = timestamp - last_timestamp;  // 和上一帧的时间差
+            obj.update();  // 不断调用
+        }
+    }
+    last_timestamp = timestamp;
+
+    requestAnimationFrame(AC_GAME_ANIMATION);
+}
 
 
+requestAnimationFrame(AC_GAME_ANIMATION);
+class GameMap extends AcGameObject {
+    constructor(playground) {
+        super();
+        this.playground = playground;  // 传入playground
+        this.$canvas = $('<canvas></canvas>');  // canvas 画布
+        this.ctx = this.$canvas[0].getContext('2d');  // 用 ctx 操作画布 canvas
 
+        this.ctx.canvas.width = this.playground.width;  // 设置画布的宽度  在playground中记录了playground的宽度和高度
+        this.ctx.canvas.height = this.playground.height;  // 设置画布的高度
 
-requestAnimationFrame();
+        this.playground.$playground.append(this.$canvas);  // 将这个画布加入到playground
+    }
+
+    render() {
+        this.ctx.fillStyle = "rgb(0, 0, 0)";  // 设置颜色
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);  // 设置长方形
+    }
+
+    start() {
+
+    }
+
+    update() {
+        this.render();  // 这个地图要一直执行画面渲染
+    }
+}
 class AcGamePlayground {
     constructor(root) {
         this.root = root;
@@ -92,8 +136,10 @@ class AcGamePlayground {
 
         //this.hide();
         this.root.$ac_game.append(this.$playground);
-        this.width = this.$playground.width();
-        this.height = this.$palyground.weight();
+        this.width = this.$playground.width();  // 记录playground的宽度
+        this.height = this.$playground.height();  // 记录高度
+        this.game_map = new GameMap(this);  // 需要传入playground参数 加入画布
+
 
         this.start();
     }
