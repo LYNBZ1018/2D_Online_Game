@@ -38,7 +38,7 @@ let AC_GAME_ANIMATION = function(timestamp) {
             obj.has_called_start = true;
         }
         else {
-            obj.timesdelta = timestamp - last_timestamp;  // 和上一帧的时间差
+            obj.timedelta = timestamp - last_timestamp;  // 和上一帧的时间差
             obj.update();  // 不断调用
         }
     }
