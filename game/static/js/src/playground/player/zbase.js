@@ -10,6 +10,9 @@ class Player extends AcGameObject
         this.y = y;
         this.vx = 0;  // 速度
         this.vy = 0;
+        this.damage_x = 0;
+        this.damage_y = 0;
+        this.damage_speed = 0;
         this.move_length = 0;  // 移动距离
         this.radius = radius;  // 半径
         this.color = color;  // 颜色
@@ -19,7 +22,7 @@ class Player extends AcGameObject
         this.is_alive = true;  // 玩家是否存活
 
         this.eps = 0.01  // 精度 小于多少是0
-
+        this.friction = 0.7;
         this.cur_skill = null;  // 判断是否选择技能
     }
 
@@ -64,9 +67,9 @@ class Player extends AcGameObject
         let angle = Math.atan2(ty - this.y, tx - this.x);
         let vx = Math.cos(angle), vy = Math.sin(angle);
         let color = "orange";
-        let speed = this.playground.height * 0.3;
-        let move_length = this.playground.height * 0.8;
-        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length);
+        let speed = this.playground.height * 0.5;
+        let move_length = this.playground.height * 1;
+        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, this.playground.height * 0.01);
     }
 
     get_dist(x1, y1, x2, y2) {  // 获得两点之间的直线距离
@@ -82,28 +85,49 @@ class Player extends AcGameObject
         this.vy = Math.sin(angle);
     }
 
-    update() {
-        if (this.move_length < this.eps) {
-            this.move_length = 0;
-            this.vx = this.vy = 0;
-            if (!this.is_me) {
-                let tx = Math.random() * this.playground.width;
-                let ty = Math.random() * this.playground.height;
-                this.move_to(tx, ty);
-            }
-        } else {
-            let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);  // 每两帧之间的时间差是毫秒需要除1000 和要移动的距离取min防止越界
-            this.x += this.vx * moved;  // 用分量系数乘实际走的距离获得分量距离
-            this.y += this.vy * moved;
-            this.move_length -= moved;  // 每次减去实际走的距离
+    is_attacked(angle, damage) {
+        this.radius -= damage;
+        console.log(this.radius - damage);
+        if (this.radius < 10) {
+            console.log("destroy", this.radius);
+            this.destroy();
+            return false;
         }
-        this.render();
+        this.damage_x = Math.cos(angle);
+        this.damage_y = Math.sin(angle);
+        this.damage_speed = damage * 90;
     }
 
-    render() {
-        this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        this.ctx.fillStyle = this.color;
-        this.ctx.fill();
+    update() {
+        if (this.damage_speed > 40) {
+            this.vx = this.vy = 0;
+            this.move_length = 0;
+            this.x += this.damage_x * this.damage_speed * this.timedelta / 1000;
+            this.y += this.damage_y * this.damage_speed * this.timedelta / 1000;
+            this.damage_speed *= this.friction;
+        } else {
+            if (this.move_length < this.eps) {
+                this.move_length = 0;
+                this.vx = this.vy = 0;
+                if (!this.is_me) {
+                    let tx = Math.random() * this.playground.width;
+                    let ty = Math.random() * this.playground.height;
+                    this.move_to(tx, ty);
+                }
+            } else {
+                let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);  // 每两帧之间的时间差是毫秒需要除1000 和要移动的距离取min防止越界
+                this.x += this.vx * moved;  // 用分量系数乘实际走的距离获得分量距离
+                this.y += this.vy * moved;
+                this.move_length -= moved;  // 每次减去实际走的距离
+            }
+        }
+            this.render();
     }
-}
+
+        render() {
+            this.ctx.beginPath();
+            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.fillStyle = this.color;
+            this.ctx.fill();
+        }
+    }
