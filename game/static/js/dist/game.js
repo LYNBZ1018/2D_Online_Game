@@ -150,11 +150,17 @@ class Player extends AcGameObject
         this.is_alive = true;  // 玩家是否存活
 
         this.eps = 0.01  // 精度 小于多少是0
+
+        this.cur_skill = null;  // 判断是否选择技能
     }
 
     start() {
         if (this.is_me) {  // 只有是自己时才可以用鼠标控制
             this.add_listening_events();
+        } else {
+            let tx = Math.random() * this.playground.width;
+            let ty = Math.random() * this.playground.height;
+            this.move_to(tx, ty);
         }
     }
 
@@ -166,8 +172,32 @@ class Player extends AcGameObject
         this.playground.game_map.$canvas.mousedown(function(e) {  // 鼠标监听
             if (e.which === 3) {  // e.which 是点击的键对应的值 == 3 是右键
                 outer.move_to(e.clientX, e.clientY);  // e.clientX 是鼠标的x坐标  移动到鼠标的位置
+            } else if (e.which === 1) {
+                if (outer.cur_skill === "fireball") {
+                    outer.shoot_fireball(e.clientX, e.clientY);
+                }
+
+                outer.cur_skill = null;
             }
         });
+
+        $(window).keydown(function(e) {
+            if (e.which === 81) {  // 81 是q的keycode
+                outer.cur_skill = "fireball";
+                return false;
+            }
+        });
+    }
+
+    shoot_fireball(tx, ty) {
+        let x = this.x, y = this.y;
+        let radius = this.playground.height * 0.01;
+        let angle = Math.atan2(ty - this.y, tx - this.x);
+        let vx = Math.cos(angle), vy = Math.sin(angle);
+        let color = "orange";
+        let speed = this.playground.height * 0.3;
+        let move_length = this.playground.height * 0.8;
+        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length);
     }
 
     get_dist(x1, y1, x2, y2) {  // 获得两点之间的直线距离
@@ -187,14 +217,61 @@ class Player extends AcGameObject
         if (this.move_length < this.eps) {
             this.move_length = 0;
             this.vx = this.vy = 0;
+            if (!this.is_me) {
+                let tx = Math.random() * this.playground.width;
+                let ty = Math.random() * this.playground.height;
+                this.move_to(tx, ty);
+            }
         } else {
             let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);  // 每两帧之间的时间差是毫秒需要除1000 和要移动的距离取min防止越界
-            console.log(this.timedelta);
             this.x += this.vx * moved;  // 用分量系数乘实际走的距离获得分量距离
             this.y += this.vy * moved;
             this.move_length -= moved;  // 每次减去实际走的距离
         }
         this.render();
+    }
+
+    render() {
+        this.ctx.beginPath();
+        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.ctx.fillStyle = this.color;
+        this.ctx.fill();
+    }
+}
+class FireBall extends AcGameObject {
+    constructor(playground, player, x, y, radius, vx, vy, color, speed, move_length) {
+        super();
+        this.playground = playground;
+        this.player = player;
+        this.ctx = this.playground.game_map.ctx;
+
+        this.x = x;  // 火球的基本参数 位置 速度 大小 距离
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.radius = radius;
+        this.color = color;
+        this.speed = speed;
+        this.move_length = move_length;
+        this.eps = 0.01;  // 精度用来判断 当*小于eps时为0
+    }
+
+    start() {
+
+    }
+
+    update() {
+        if (this.move_length < this.eps) {
+            this.destroy();
+            return false;
+        }
+
+        let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);  // timedelta记录的是毫秒需要除1000
+        this.x += this.vx * moved;
+        this.y += this.vy * moved;
+        this.move_length -= moved;
+
+        this.render();  // 不断地执行 知道destroy
     }
 
     render() {
@@ -215,7 +292,11 @@ class AcGamePlayground {
         this.height = this.$playground.height();  // 记录高度
         this.game_map = new GameMap(this);  // 需要传入playground参数 加入画布
         this.players = [];  // 创建用户队列
-        this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "Dodgerblue", true, this.height * 0.15));  // playground, x, y, radius, color, is_me, speed
+        this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "white", true, this.height * 0.15));  // playground, x, y, radius, color, is_me, speed
+        
+        for (let i = 0; i < 5; i ++ ) {
+            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "Dodgerblue", false, this.height * 0.15));
+        }
 
         this.start();
     }

@@ -1,0 +1,43 @@
+class FireBall extends AcGameObject {
+    constructor(playground, player, x, y, radius, vx, vy, color, speed, move_length) {
+        super();
+        this.playground = playground;
+        this.player = player;
+        this.ctx = this.playground.game_map.ctx;
+
+        this.x = x;  // 火球的基本参数 位置 速度 大小 距离
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.radius = radius;
+        this.color = color;
+        this.speed = speed;
+        this.move_length = move_length;
+        this.eps = 0.01;  // 精度用来判断 当*小于eps时为0
+    }
+
+    start() {
+
+    }
+
+    update() {
+        if (this.move_length < this.eps) {
+            this.destroy();
+            return false;
+        }
+
+        let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);  // timedelta记录的是毫秒需要除1000
+        this.x += this.vx * moved;
+        this.y += this.vy * moved;
+        this.move_length -= moved;
+
+        this.render();  // 不断地执行 知道destroy
+    }
+
+    render() {
+        this.ctx.beginPath();
+        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.ctx.fillStyle = this.color;
+        this.ctx.fill();
+    }
+}
