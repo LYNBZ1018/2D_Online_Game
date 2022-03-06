@@ -24,6 +24,7 @@ class Player extends AcGameObject
         this.eps = 0.01  // 精度 小于多少是0
         this.friction = 0.7;
         this.cur_skill = null;  // 判断是否选择技能
+        this.spent_time = 0;  // 冷静期
     }
 
     start() {
@@ -86,7 +87,7 @@ class Player extends AcGameObject
     }
 
     is_attacked(angle, damage) {
-        for (let i = 0; i < 6 + Math.random() * 5; i ++ ) {
+        for (let i = 0; i < 6 + Math.random() * 5; i ++ ) {  // 攻击后的粒子效果
             let x = this.x, y = this.y;
             let radius = this.radius * Math.random() * 0.18;  // 随机半径
             let angle = Math.PI * 2 * Math.random();  // 随机角度
@@ -110,6 +111,13 @@ class Player extends AcGameObject
     }
 
     update() {
+        this.spent_time += this.timedelta / 1000;
+        if (!this.is_me && this.spent_time > 4 && Math.random() < 1 / 300.0) {
+            let player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)];
+            let tx = player.x + player.speed * this.vx * this.timedelta / 1000 * 0.3;
+            let ty = player.y + player.speed * this.vy * this.timedelta / 1000 * 0.3;
+            this.shoot_fireball(tx, ty);
+        }
         if (this.damage_speed > 40) {
             this.vx = this.vy = 0;
             this.move_length = 0;
@@ -141,4 +149,12 @@ class Player extends AcGameObject
             this.ctx.fillStyle = this.color;
             this.ctx.fill();
         }
+
+    on_destroy() {
+        for (let i = 0; i < this.playground.players.length; i ++ ) {
+            if (this.playground.players[i] === this) {
+                this.playground.players.splice(i, 1);
+            }
+        }
     }
+}
