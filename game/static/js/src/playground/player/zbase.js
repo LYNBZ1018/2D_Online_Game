@@ -86,6 +86,17 @@ class Player extends AcGameObject
     }
 
     is_attacked(angle, damage) {
+        for (let i = 0; i < 6 + Math.random() * 5; i ++ ) {
+            let x = this.x, y = this.y;
+            let radius = this.radius * Math.random() * 0.18;  // 随机半径
+            let angle = Math.PI * 2 * Math.random();  // 随机角度
+            let vx = Math.cos(angle), vy = Math.sin(angle);
+            let color = this.color;  // 颜色和母体保持一致
+            let speed = this.speed * 10;
+            let move_length = this.radius * Math.random() * 3;  // 设置一个距离
+            new Particle(this.playground, x, y, radius, vx, vy, color, speed, move_length);
+        }
+
         this.radius -= damage;
         console.log(this.radius - damage);
         if (this.radius < 10) {

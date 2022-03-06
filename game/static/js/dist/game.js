@@ -129,6 +129,47 @@ class GameMap extends AcGameObject {
         this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);  // 设置长方形
     }
 }
+class Particle extends AcGameObject {
+    constructor(playground, x, y, radius, vx, vy, color, speed, move_length) {
+        super();
+        this.playground = playground;
+        this.ctx = this.playground.game_map.ctx;
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.vx = vx;
+        this.vy = vy;
+        this.color = color;
+        this.speed = speed;
+        this.move_length = move_length;
+        this.friction = 10;
+        this.eps = 0.01;
+    }
+
+    start() {
+    }
+
+    update() {
+        if (this.move_length < this.eps || this.speed <this.eps) {  // move_length减小到一定值后就消失或者速度减小到一定值
+            this.destroy();
+            return false;
+        }
+
+        let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);
+        this.x += this.vx * moved;
+        this.y += this.vy * moved;
+        this.speed *= this.friction;
+        this.move_length -= moved;
+        this.render();
+    }
+
+    render() {
+        this.ctx.beginPath();
+        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.ctx.fillStyle = this.color;
+        this.ctx.fill();
+    }
+}
 class Player extends AcGameObject
 {
     constructor(playground, x, y, radius, color, is_me, speed){
@@ -217,6 +258,17 @@ class Player extends AcGameObject
     }
 
     is_attacked(angle, damage) {
+        for (let i = 0; i < 6 + Math.random() * 5; i ++ ) {
+            let x = this.x, y = this.y;
+            let radius = this.radius * Math.random() * 0.18;  // 随机半径
+            let angle = Math.PI * 2 * Math.random();  // 随机角度
+            let vx = Math.cos(angle), vy = Math.sin(angle);
+            let color = this.color;  // 颜色和母体保持一致
+            let speed = this.speed * 10;
+            let move_length = this.radius * Math.random() * 3;  // 设置一个距离
+            new Particle(this.playground, x, y, radius, vx, vy, color, speed, move_length);
+        }
+
         this.radius -= damage;
         console.log(this.radius - damage);
         if (this.radius < 10) {
