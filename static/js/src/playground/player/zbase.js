@@ -43,11 +43,12 @@ class Player extends AcGameObject
             return false;
         });
         this.playground.game_map.$canvas.mousedown(function(e) {  // 鼠标监听
+            const rect = outer.ctx.canvas.getBoundingClientRect();  // 画布距离屏幕左上角的距离
             if (e.which === 3) {  // e.which 是点击的键对应的值 == 3 是右键
-                outer.move_to(e.clientX, e.clientY);  // e.clientX 是鼠标的x坐标  移动到鼠标的位置
+                outer.move_to(e.clientX - rect.left, e.clientY - rect.top);  // e.clientX 是鼠标的x坐标  移动到鼠标的位置  减去画布距离左上角的距离
             } else if (e.which === 1) {
                 if (outer.cur_skill === "fireball") {
-                    outer.shoot_fireball(e.clientX, e.clientY);
+                    outer.shoot_fireball(e.clientX - rect.left, e.clientY - rect.top);  // 减去距离左上角的距离
                 }
 
                 outer.cur_skill = null;
