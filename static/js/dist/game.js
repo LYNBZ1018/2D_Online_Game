@@ -407,7 +407,18 @@ class AcGamePlayground {
         this.root = root;
         this.$playground = $(`<div class="ac-game-playground"></div>`);
 
-        //this.hide();
+        this.hide();
+        
+        this.start();
+    }
+
+    start() {
+
+    }
+
+    show() {
+        this.$playground.show();  // 打开playground界面
+
         this.root.$ac_game.append(this.$playground);
         this.width = this.$playground.width();  // 记录playground的宽度
         this.height = this.$playground.height();  // 记录高度
@@ -421,15 +432,6 @@ class AcGamePlayground {
             this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, pcolor, false, this.height * 0.15));
         }
 
-        this.start();
-    }
-
-    start() {
-
-    }
-
-    show() {
-        this.$playground.show();
     }
 
     hide() {
@@ -440,7 +442,7 @@ export class AcGame {
     constructor(id) {
         this.id = id;
         this.$ac_game = $('#' + id);
-        //this.menu = new AcGameMenu(this);
+        this.menu = new AcGameMenu(this);
         this.playground = new AcGamePlayground(this);
 
         this.start();
