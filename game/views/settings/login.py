@@ -1,7 +1,8 @@
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
 
-def singin(request):
+
+def signin(request):
     data = request.GET
     username = data.get('username')
     password = data.get('password')
@@ -14,3 +15,4 @@ def singin(request):
     return JsonResponse({
         'result': "success"
     })
+
