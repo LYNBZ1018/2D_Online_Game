@@ -495,7 +495,7 @@ class Settings {
             </div>
         </div>
     </div>
-    <div cladd="ac-game-settings-register">
+    <div class="ac-game-settings-register">
         <div class="ac-game-settings-title">
             注册
         </div>
@@ -616,10 +616,10 @@ class Settings {
         let outer = this;
         let username = this.$register_username.val();
         let password = this.$register_password.val();
-        let password_confirm = this.register_password_confirm.val();
+        let password_confirm = this.$register_password_confirm.val();
         this.$register_error_message.empty();
 
-        $ajax({
+        $.ajax({
             url: "https://app1832.acapp.acwing.com.cn/settings/register",
             type: "GET",
             data: {
