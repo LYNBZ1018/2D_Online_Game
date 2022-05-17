@@ -4,7 +4,7 @@ from game.models.player.player import Player
 
 
 def getinfo_acapp(request):
-    player = Player.objects.all()[0]  # 取出数据库中第一个用户
+    player = Player.objects.all()[0]
     return JsonResponse({
         'result': "success",
         'username': player.user.username,
@@ -15,12 +15,12 @@ def getinfo_acapp(request):
 
 def getinfo_web(request):
     user = request.user
-    if not user.is_authenticated:  # 未登录
+    if not user.is_authenticated:
         return JsonResponse({
-            'result': "not login"
+            'result': "未登录"
         })
     else:
-        player = Player.objects.get(user=user)  # 取出数据库中第一个用户
+        player = Player.objects.get(user=user)
         return JsonResponse({
             'result': "success",
             'username': player.user.username,
@@ -30,7 +30,7 @@ def getinfo_web(request):
 
 
 def getinfo(request):
-    platform = request.GET.get('platform')  # 根据请求平台的不同 进行不同的处理
+    platform = request.GET.get('platform')
     if platform == "ACAPP":
         return getinfo_acapp(request)
     elif platform == "WEB":

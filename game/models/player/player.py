@@ -8,6 +8,7 @@ class Player(models.Model):
     #当user被删除时，player也被级联删除
 
     photo = models.URLField(max_length=256, blank=True)
+    openid = models.CharField(default="", max_length=50, blank=True, null = True)
 
     def __str__(self):
         return str(self.user)

@@ -65,6 +65,8 @@ class Settings {
                 <button>注册</button>
             </div>
         </div>
+        <div class="ac-game-settings-error-message">
+        </div>
         <div class="ac-game-settings-option">
             登陆
         </div>
@@ -82,7 +84,7 @@ class Settings {
         this.$login = this.$settings.find(".ac-game-settings-login");
         this.$login_username = this.$login.find(".ac-game-settings-username input");
         this.$login_password = this.$login.find(".ac-game-settings-password input");
-        this.$login_submit = this.$login.find(".ac-game-settings-submit-button");
+        this.$login_submit = this.$login.find(".ac-game-settings-submit button");
         this.$login_error_message = this.$login.find(".ac-game-settings-error-message");
         this.$login_register = this.$login.find(".ac-game-settings-option");
 
@@ -97,6 +99,8 @@ class Settings {
         this.$register_login = this.$register.find(".ac-game-settings-option");
 
         this.$register.hide();
+        
+        this.$acwing_login = this.$settings.find('.ac-game-settings-acwing img');
 
         this.root.$ac_game.append(this.$settings);
 
@@ -104,13 +108,18 @@ class Settings {
     }
 
     start() {
-        this.getinfor();
+        this.getinfo();
         this.add_listening_events();
     }
 
     add_listening_events() {
+        let outer = this;
         this.add_listening_events_login();
         this.add_listening_events_register();
+
+        this.$acwing_login.click(function() {
+            outer.acwing_login();
+        });
     }
 
     add_listening_events_login() {
@@ -134,13 +143,24 @@ class Settings {
         });
     }
 
-    login_on_remote() {
+    acwing_login() {
+        $ajax({
+            url: "",
+            type: "GET",
+            success: function(resp) {
+                if (resp.result === "success") {
+                    window.location.replace(resp.apply_code_url);
+                }
+            }
+        })
+    }
+
+    login_on_remote() {  // 在远程服务器上登录
         let outer = this;
-        let username = this.$login_username.val();
+        let username = this.$login_username.val();  // .val() 去除input 中的值
         let password = this.$login_password.val();
         this.$login_error_message.empty();
-
-        $ajax({
+        $.ajax({
             url: "https://app1832.acapp.acwing.com.cn/settings/login/",
             type: "GET",
             data: {
@@ -148,7 +168,6 @@ class Settings {
                 password: password,
             },
             success: function(resp) {
-                console.log(resp);
                 if (resp.result === "success") {
                     location.reload();
                 } else {
@@ -158,7 +177,9 @@ class Settings {
         });
     }
 
-    register_on_remote() {
+
+
+    register_on_remote() {  // 在远程服务器上注册
         let outer = this;
         let username = this.$register_username.val();
         let password = this.$register_password.val();
@@ -178,10 +199,24 @@ class Settings {
                 if (resp.result === "success") {
                     location.reload();
                 } else {
-                    outer.$register_error-message.html(resp.result);
+                    outer.$register_error_message.html(resp.result);
                 }
             }
         })
+    }
+
+    logout_on_remote() {  // 在远程服务器上登出
+        if (this.platform === "ACAPP") {
+            this.root.AcWingOS.api.window.close();
+        } else {
+            $.ajax({
+                url: "https://app1832.acapp.acwing.com.cn/settings/logout/",
+                type: "GET",
+                success: function(resp) {
+                    location.reload();
+                }
+            })
+        }
     }
 
     register() {
@@ -194,7 +229,7 @@ class Settings {
         this.$login.show();
     }
 
-    getinfor() {
+    getinfo() {
         let outer = this;
         $.ajax({
             url: "https://app1832.acapp.acwing.com.cn/settings/getinfo/",
